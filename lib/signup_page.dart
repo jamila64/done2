@@ -1,91 +1,52 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'home_page.dart';
+import 'package:get/get.dart';
+import 'task_controller.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
-
-  @override
-  State<SignupPage> createState() => _SignupPageState();
-}
-
-class _SignupPageState extends State<SignupPage> {
-  // تعريف القائمة (List) لتخزين المستخدمين المسجلين
-  final List<Map<String, String>> _usersList = [];
-
-  final TextEditingController _userController = TextEditingController();
-  final TextEditingController _passController = TextEditingController();
+class SignupPage extends StatelessWidget {
+  final TextEditingController _controller = TextEditingController();
+  final TaskController taskController = Get.find();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // الحفاظ على التصميم الحالي كما هو تماماً
-      appBar: AppBar(title: const Text("إنشاء حساب جديد"), centerTitle: true),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: Padding(
+        padding: const EdgeInsets.all(30.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.account_circle, size: 100, color: Colors.indigo),
+            Obx(() => GestureDetector(
+              onTap: () => taskController.pickImage(),
+              child: CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.indigo[100],
+                backgroundImage: taskController.userImage.value.isNotEmpty
+                    ? FileImage(File(taskController.userImage.value)) : null,
+                child: taskController.userImage.value.isEmpty
+                    ? const Icon(Icons.camera_alt, size: 40, color: Colors.indigo) : null,
+              ),
+            )),
             const SizedBox(height: 30),
-            // حقل اسم المستخدم
             TextField(
-              controller: _userController,
+              controller: _controller,
               decoration: InputDecoration(
-                labelText: "اسم الطالب",
-                prefixIcon: const Icon(Icons.person),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
-                filled: true,
-                fillColor: Colors.indigo.withOpacity(0.05),
+                labelText: "اسم المستخدم",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
               ),
             ),
-            const SizedBox(height: 15),
-            // حقل كلمة المرور
-            TextField(
-              controller: _passController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: "كلمة المرور",
-                prefixIcon: const Icon(Icons.lock),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(40)),
-                filled: true,
-                fillColor: Colors.indigo.withOpacity(0.05),
-              ),
-            ),
-            const SizedBox(height: 30),
-            // زر إنشاء الحساب باستخدام القائمة
+            const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 55),
                 backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
               ),
               onPressed: () {
-                if (_userController.text.isNotEmpty && _passController.text.isNotEmpty) {
-                  setState(() {
-                    // إضافة البيانات المدخلة إلى الـ List
-                    _usersList.add({
-                      "userName": _userController.text,
-                      "password": _passController.text,
-                    });
-                  });
-
-                  // طباعة القائمة في التيرمينال للتأكد من الإضافة
-                  print("القائمة الحالية للمستخدمين: $_usersList");
-
-                  // الانتقال لصفحة الهوم مع تمرير الاسم الأخير المسجل
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(userName: _userController.text),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("الرجاء إدخال كافة البيانات")),
-                  );
+                if (_controller.text.isNotEmpty) {
+                  taskController.saveUser(_controller.text);
+                  Get.offAllNamed('/home');
                 }
               },
-              child: const Text("إنشاء حساب ودخول", style: TextStyle(fontSize: 18)),
+              child: const Text("دخول", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
